@@ -52,20 +52,17 @@ uploaded_file = st.file_uploader("Choose an image file", type=["jpg", "jpeg", "p
 if uploaded_file is not None:
 
     # Convert the image data to a PIL Image object
-    image_data = np.fromstring(uploaded_file.read(), np.uint8)
-    image = PIL.Image.open(io.BytesIO(image_data))
-
-    # Convert the PIL Image object to JPEG or PNG format
-    if image.format == 'PNG':
-        # Convert to JPEG format if the image is already in PNG format
+    try:
+        # Convert the PIL Image object to JPEG format
         converted_image = image.convert('JPEG')
-    else:
-        # Keep the image format if it's not PNG
-        converted_image = image
+    except Exception as e:
+        st.error(f"Error converting image: {e}")
+        converted_image = None
 
-    # Encode the converted image to bytes
-    converted_image_bytes = io.BytesIO()
-    converted_image.save(converted_image_bytes, image.format)
+    if converted_image is not None:
+        # Encode the converted image to bytes
+        converted_image_bytes = io.BytesIO()
+        converted_image.save(converted_image_bytes, 'JPEG')
 
     # Process the converted image using MediaPipe
     with mp_hands.Hands(min_detection_confidence=0.8, min_tracking_confidence=0.5) as hands:
