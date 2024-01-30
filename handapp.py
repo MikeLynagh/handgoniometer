@@ -1,12 +1,7 @@
-pip install opencv-python
-pip install streamlit
-pip install mediapipe
-pip install numpy
-pip install tabulate
+
 
 
 import streamlit as st
-import cv2
 import mediapipe as mp
 import numpy as np
 from tabulate import tabulate
