@@ -52,6 +52,9 @@ uploaded_file = st.file_uploader("Choose an image file", type=["jpg", "jpeg", "p
 if uploaded_file is not None:
 
     # Convert the image data to a PIL Image object
+    image_data = np.fromstring(uploaded_file.read(), np.uint8)
+    image = PIL.Image.open(io.BytesIO(image_data))
+
     try:
         # Convert the PIL Image object to JPEG format
         converted_image = image.convert('JPEG')
@@ -64,27 +67,30 @@ if uploaded_file is not None:
         converted_image_bytes = io.BytesIO()
         converted_image.save(converted_image_bytes, 'JPEG')
 
-    # Process the converted image using MediaPipe
-    with mp_hands.Hands(min_detection_confidence=0.8, min_tracking_confidence=0.5) as hands:
-        image_bytes = converted_image_bytes.getvalue()
-        image = cv2.imdecode(np.fromstring(image_bytes, np.uint8), cv2.IMREAD_COLOR)
+        # Process the converted image using MediaPipe
+        with mp_hands.Hands(min_detection_confidence=0.8, min_tracking_confidence=0.5) as hands:
+            # Retrieve the bytes from the BytesIO object
+            image_bytes = converted_image_bytes.getvalue()
 
-        image.flags.writeable = False
-        results = hands.process(image)
-        image.flags.writeable = True
+            # Decode the image bytes using OpenCV
+            image = cv2.imdecode(np.fromstring(image_bytes, np.uint8), cv2.IMREAD_COLOR)
 
-        # Draw landmarks and angles on the image
-        image, angle_results = draw_finger_angles(image, results, joint_list)
+            image.flags.writeable = False
+            results = hands.process(image)
+            image.flags.writeable = True
 
-        # Render the image with annotations using Streamlit
-        st.image(image, caption='Hand Tracking', channels="BGR", use_column_width=True)
+            # Draw landmarks and angles on the image
+            image, angle_results = draw_finger_angles(image, results, joint_list)
 
-    # Display the results in a table format using Streamlit
-    st.text(tabulate(angle_results, headers=["Joint", "Angle"], tablefmt="grid"))
+            # Render the image with annotations using Streamlit
+            st.image(image, caption='Hand Tracking', channels="BGR", use_column_width=True)
 
-# Display message if no file is selected
-#else:
-#    st.text("No file selected.")
+        # Display the results in a table format using Streamlit
+        st.text(tabulate(angle_results, headers=["Joint", "Angle"], tablefmt="grid"))
+
+#Display message if no file is selected
+else:
+    st.text("No file selected.")
 
 # Check if a file is uploaded
 #if uploaded_file is not None:
