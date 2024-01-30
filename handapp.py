@@ -53,7 +53,7 @@ uploaded_file = st.file_uploader("Choose an image file", type=["jpg", "jpeg", "p
 if uploaded_file is not None:
 
     # Convert the image data to a PIL Image object
-    image_data = np.fromstring(uploaded_file.read(), np.uint8)
+    image_data = np.frombuffer(uploaded_file.read(), np.uint8)
     image = PIL.Image.open(io.BytesIO(image_data))
 
     try:
