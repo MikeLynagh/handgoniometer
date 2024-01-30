@@ -56,12 +56,17 @@ if uploaded_file is not None:
     image_data = np.frombuffer(uploaded_file.read(), np.uint8)
     image = PIL.Image.open(io.BytesIO(image_data))
 
-    try:
+    ## check if image is in RGB mode
+    if image.mode == "RGB":
+        converted_image = image
+    else:
+
+        try:
         # Convert the PIL Image object to JPEG format
-        converted_image = image.convert('JPEG')
-    except Exception as e:
-        st.error(f"Error converting image: {e}")
-        converted_image = None
+            converted_image = image.convert('JPEG')
+        except Exception as e:
+            st.error(f"Error converting image: {e}")
+            converted_image = None
 
     if converted_image is not None:
         # Encode the converted image to bytes
