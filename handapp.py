@@ -50,6 +50,9 @@ st.title("Hand Tracking App")
 uploaded_file = st.file_uploader("Choose an image file", type=["jpg", "jpeg", "png"])
 
 if uploaded_file is not None:
+
+    st.image(uploaded_file, caption='Uploaded Image', use_column_width=True)
+
     # Convert the image data to a PIL Image object
     image_data = np.frombuffer(uploaded_file.read(), np.uint8)
     image = PIL.Image.open(io.BytesIO(image_data))
