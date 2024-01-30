@@ -72,14 +72,17 @@ if uploaded_file is not None:
                 # Process the image
                 results = hands.process(np.array(converted_image))
 
-                # Draw landmarks and angles on the image
-                image, angle_results = draw_finger_angles(np.array(converted_image), results, joint_list)
+                if results.multi_hand_landmarks:
+                    # Draw landmarks and angles on the image
+                    image, angle_results = draw_finger_angles(np.array(converted_image), results, joint_list)
 
-                # Render the image with annotations using Streamlit
-                st.image(image, caption='Hand Tracking', channels="BGR", use_column_width=True)
+                    # Render the image with annotations using Streamlit
+                    st.image(image, caption='Hand Tracking', channels="BGR", use_column_width=True)
 
-                # Display the results in a table format using Streamlit
-                st.text(tabulate(angle_results, headers=["Joint", "Angle"], tablefmt="grid"))
+                    # Display the results in a table format using Streamlit
+                    st.text(tabulate(angle_results, headers=["Joint", "Angle"], tablefmt="grid"))
+                else:
+                    st.error("No hands detected in the image.")
 
             except Exception as e:
                 st.error(f"Error processing image: {e}")
