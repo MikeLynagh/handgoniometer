@@ -43,7 +43,6 @@ def draw_finger_angles(image, results, joint_list):
 
     return image, angle_results
 
-
 # Main Streamlit app
 st.title("Hand Tracking App")
 
@@ -51,50 +50,41 @@ st.title("Hand Tracking App")
 uploaded_file = st.file_uploader("Choose an image file", type=["jpg", "jpeg", "png"])
 
 if uploaded_file is not None:
-
     # Convert the image data to a PIL Image object
     image_data = np.frombuffer(uploaded_file.read(), np.uint8)
     image = PIL.Image.open(io.BytesIO(image_data))
 
-    ## check if image is in RGB mode
+    # Check if the image is in RGB mode
     if image.mode == "RGB":
         converted_image = image
     else:
-
         try:
-        # Convert the PIL Image object to JPEG format
-            converted_image = image.convert('JPEG')
+            # Convert the PIL Image object to RGB mode
+            converted_image = image.convert('RGB')
         except Exception as e:
-            st.error(f"Error converting image: {e}")
+            st.error(f"Error converting image to RGB: {e}")
             converted_image = None
 
     if converted_image is not None:
-        # Encode the converted image to bytes
-        converted_image_bytes = io.BytesIO()
-        converted_image.save(converted_image_bytes, 'JPEG')
-
         # Process the converted image using MediaPipe
         with mp_hands.Hands(min_detection_confidence=0.8, min_tracking_confidence=0.5) as hands:
-            # Retrieve the bytes from the BytesIO object
-            image_bytes = converted_image_bytes.getvalue()
+            try:
+                # Process the image
+                results = hands.process(np.array(converted_image))
 
-            # Decode the image bytes using OpenCV
-            image = cv2.imdecode(np.fromstring(image_bytes, np.uint8), cv2.IMREAD_COLOR)
+                # Draw landmarks and angles on the image
+                image, angle_results = draw_finger_angles(np.array(converted_image), results, joint_list)
 
-            image.flags.writeable = False
-            results = hands.process(image)
-            image.flags.writeable = True
+                # Render the image with annotations using Streamlit
+                st.image(image, caption='Hand Tracking', channels="BGR", use_column_width=True)
 
-            # Draw landmarks and angles on the image
-            image, angle_results = draw_finger_angles(image, results, joint_list)
+                # Display the results in a table format using Streamlit
+                st.text(tabulate(angle_results, headers=["Joint", "Angle"], tablefmt="grid"))
 
-            # Render the image with annotations using Streamlit
-            st.image(image, caption='Hand Tracking', channels="BGR", use_column_width=True)
+            except Exception as e:
+                st.error(f"Error processing image: {e}")
 
-        # Display the results in a table format using Streamlit
-        st.text(tabulate(angle_results, headers=["Joint", "Angle"], tablefmt="grid"))
-
-#Display message if no file is selected
+# Display message if no file is selected
 else:
     st.text("No file selected.")
 
