@@ -4,6 +4,7 @@ import numpy as np
 from tabulate import tabulate
 import PIL.Image
 import io
+import cv2
 
 mp_hands = mp.solutions.hands
 mp_drawing = mp.solutions.drawing_utils
