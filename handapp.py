@@ -2,6 +2,7 @@ import streamlit as st
 import mediapipe as mp
 import numpy as np
 from tabulate import tabulate
+import PIL.Image
 
 mp_hands = mp.solutions.hands
 mp_drawing = mp.solutions.drawing_utils
@@ -47,23 +48,63 @@ st.title("Hand Tracking App")
 # Sidebar for file upload
 uploaded_file = st.file_uploader("Choose an image file", type=["jpg", "jpeg", "png"])
 
-# Check if a file is uploaded
 if uploaded_file is not None:
-    # Read the uploaded image
-    image = cv2.imdecode(np.fromstring(uploaded_file.read(), np.uint8), 1)
-    image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
-    image = cv2.flip(image, 1)
 
-    # Streamlit button for processing the image
-    if st.button("Process Image"):
-        # Hand tracking using MediaPipe
-        with mp_hands.Hands(min_detection_confidence=0.8, min_tracking_confidence=0.5) as hands:
-            image.flags.writeable = False
-            results = hands.process(image)
-            image.flags.writeable = True
+    # Convert the image data to a PIL Image object
+    image_data = np.fromstring(uploaded_file.read(), np.uint8)
+    image = PIL.Image.open(io.BytesIO(image_data))
 
-            # Draw landmarks and angles on the image
-            image, angle_results = draw_
+    # Convert the PIL Image object to JPEG or PNG format
+    if image.format == 'PNG':
+        # Convert to JPEG format if the image is already in PNG format
+        converted_image = image.convert('JPEG')
+    else:
+        # Keep the image format if it's not PNG
+        converted_image = image
+
+    # Encode the converted image to bytes
+    converted_image_bytes = io.BytesIO()
+    converted_image.save(converted_image_bytes, image.format)
+
+    # Process the converted image using MediaPipe
+    with mp_hands.Hands(min_detection_confidence=0.8, min_tracking_confidence=0.5) as hands:
+        image_bytes = converted_image_bytes.getvalue()
+        image = cv2.imdecode(np.fromstring(image_bytes, np.uint8), cv2.IMREAD_COLOR)
+
+        image.flags.writeable = False
+        results = hands.process(image)
+        image.flags.writeable = True
+
+        # Draw landmarks and angles on the image
+        image, angle_results = draw_finger_angles(image, results, joint_list)
+
+        # Render the image with annotations using Streamlit
+        st.image(image, caption='Hand Tracking', channels="BGR", use_column_width=True)
+
+    # Display the results in a table format using Streamlit
+    st.text(tabulate(angle_results, headers=["Joint", "Angle"], tablefmt="grid"))
+
+# Display message if no file is selected
+#else:
+#    st.text("No file selected.")
+
+# Check if a file is uploaded
+#if uploaded_file is not None:
+ #   # Read the uploaded image
+  #  image = cv2.imdecode(np.fromstring(uploaded_file.read(), np.uint8), 1)
+   # image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+    #image = cv2.flip(image, 1)
+
+    ## Streamlit button for processing the image
+#    if# st.button("Process Image"):
+#        # Hand tracking using MediaPipe
+#        with mp_hands.Hands(min_detection_confidence=0.8, min_tracking_confidence=0.5) as hands:
+#            image.flags.writeable = False
+#            results = hands.process(image)
+#            image.flags.writeable = True
+
+ #           # Draw landmarks and angles on the image
+ #           image, angle_results = draw_
 
 
 
