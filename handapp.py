@@ -77,6 +77,11 @@ if uploaded_file is not None:
 
                 if results.multi_hand_landmarks:
                     # Draw landmarks and angles on the image
+                    ## convert to numpy array for OpenCV
+                    for hand_landmarks in results.multi_hand_landmarks:
+                        mp_drawing.draw_landmarks(image, hand_landmarks, mp_hands.HAND_CONNECTIONS)
+
+                        
                     image, angle_results = draw_finger_angles(np.array(converted_image), results, joint_list)
 
                     # Render the image with annotations using Streamlit
