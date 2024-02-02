@@ -72,16 +72,14 @@ if uploaded_file is not None:
         # Process the converted image using MediaPipe
         with mp_hands.Hands(min_detection_confidence=0.8, min_tracking_confidence=0.5) as hands:
             try:
+
+                ## added this comment, convert image to numPy array
+                image_array = np.array(converted_image)
                 # Process the image
-                results = hands.process(np.array(converted_image))
+                results = hands.process(np.array(image_array))
 
                 if results.multi_hand_landmarks:
                     # Draw landmarks and angles on the image
-                    ## convert to numpy array for OpenCV
-                    for hand_landmarks in results.multi_hand_landmarks:
-                        mp_drawing.draw_landmarks(image, hand_landmarks, mp_hands.HAND_CONNECTIONS)
-
-                        
                     image, angle_results = draw_finger_angles(np.array(converted_image), results, joint_list)
 
                     # Render the image with annotations using Streamlit
